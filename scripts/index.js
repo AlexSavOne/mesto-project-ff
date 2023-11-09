@@ -16,14 +16,14 @@ function createCard(cardData, deleteCallback) {
   cardTitle.textContent = cardData.name;
 
   cardDeleteButton.addEventListener('click', function () {
-    deleteCallback(cardElement, cardData);
+    deleteCallback(cardElement);
   });
 
   return cardElement;
 }
 
 // @todo: Функция удаления карточки
-function deleteCard(cardElement, cardData) {
+function deleteCard(cardElement) {
   cardElement.remove();
 }
 
