@@ -2,7 +2,8 @@ import '../pages/index.css';
 import { initialCards } from '../scripts/cards';
 
 // @todo: Темплейт карточки
-const cardTemplate = document.querySelector('#card-template');
+(function () {
+  const cardTemplate = document.querySelector('#card-template');
 
 // @todo: DOM узлы
 const placesList = document.querySelector('.places__list');
@@ -39,3 +40,5 @@ function renderCards(cards) {
 }
 
 renderCards(initialCards);
+
+})();
