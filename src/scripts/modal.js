@@ -1,29 +1,32 @@
-export function openModal(modal) {
-  modal.classList.add('popup_is-opened', 'popup_is-animated');
+// Функция открытия попапа
+
+export function openPopup(popup) {
+  popup.classList.add('popup_is-opened', 'popup_is-animated');
   document.addEventListener('keydown', handleEscPress);
-  modal.querySelector('.popup__close').addEventListener('click', function () {
-    closeModal(modal);
+  popup.querySelector('.popup__close').addEventListener('click', function () {
+    closePopup(popup);
   });
-  modal.addEventListener('click', function (event) {
-    handleOverlayClick(event, modal);
+  popup.addEventListener('click', function (event) {
+    handleOverlayClick(event, popup);
   });
 }
 
-export function closeModal(modal) {
-  modal.classList.remove('popup_is-opened');
+// Функция закрытия попапа
+export function closePopup(popup) {
+  popup.classList.remove('popup_is-opened');
   document.removeEventListener('keydown', handleEscPress);
 }
 
-function handleEscPress(event) {
+// Обработчик нажатия клавиши Esc
+export function handleEscPress(event, ...popups) {
   if (event.key === 'Escape') {
-    closeModal(editPopup);
-    closeModal(newCardPopup);
-    closeModal(imagePopup);
+    popups.forEach(closePopup);
   }
 }
 
-function handleOverlayClick(event, modal) {
+// Обработчик клика по оверлею
+export function handleOverlayClick(event, popup) {
   if (event.target === event.currentTarget) {
-    closeModal(modal);
+    closePopup(popup);
   }
 }

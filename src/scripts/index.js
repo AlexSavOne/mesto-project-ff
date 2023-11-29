@@ -1,8 +1,11 @@
+// Подключение стилей и необходимых функций из других модулей
 import '../pages/index.css';
-import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards';
-// import { openPopup, closePopup } from './modal';
+import { createCard, deleteCard, likeCard } from './card';
+import { openPopup, closePopup, handleOverlayClick, handleEscPress } from './modal';
+import { initialCards } from './cards';
 
 (function () {
+  // Получение ссылок на DOM-элементы страницы
   const placesList = document.querySelector('.places__list');
   const imagePopup = document.querySelector('.popup_type_image');
   const editButton = document.querySelector('.profile__edit-button');
@@ -17,37 +20,7 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
   const profileTitle = document.querySelector('.profile__title');
   const profileDescription = document.querySelector('.profile__description');
 
-  function openPopup(popup) {
-    popup.classList.add('popup_is-opened', 'popup_is-animated');
-    document.addEventListener('keydown', handleEscPress);
-    popup.querySelector('.popup__close').addEventListener('click', function () {
-      closePopup(popup);
-    });
-    popup.addEventListener('click', function (event) {
-      handleOverlayClick(event, popup);
-    });
-
-  }
-
-  function closePopup(popup) {
-    popup.classList.remove('popup_is-opened');
-    document.removeEventListener('keydown', handleEscPress);
-  }
-
-  function handleEscPress(event) {
-    if (event.key === 'Escape') {
-      closePopup(editPopup);
-      closePopup(newCardPopup);
-      closePopup(imagePopup);
-    }
-  }
-
-  function handleOverlayClick(event, popup) {
-    if (event.target === event.currentTarget) {
-      closePopup(popup);
-    }
-  }
-
+  // Функция открытия попапа для редактирования профиля
   function openEditPopup() {
     nameInput.value = profileTitle.textContent;
     jobInput.value = profileDescription.textContent;
@@ -55,10 +28,12 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
     openPopup(editPopup);
   }
 
+  // Функция открытия попапа для добавления новой карточки
   function openNewCardPopup() {
     openPopup(newCardPopup);
   }
 
+  // Функция открытия попапа с изображением карточки
   function openImagePopup(cardData) {
     const imagePopupImage = imagePopup.querySelector('.popup__image');
     const imagePopupCaption = imagePopup.querySelector('.popup__caption');
@@ -70,17 +45,17 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
     openPopup(imagePopup);
   }
 
+  // Функция обработки отправки формы редактирования профиля
   function handleFormSubmit(evt) {
     evt.preventDefault();
 
-    // Обновить значения на странице
     profileTitle.textContent = nameInput.value;
     profileDescription.textContent = jobInput.value;
 
-    // Закрыть попап
     closePopup(editPopup);
   }
 
+  // Добавление слушателей событий
   editButton.addEventListener('click', openEditPopup);
   addButton.addEventListener('click', openNewCardPopup);
   closeEditPopupButton.addEventListener('click', () => closePopup(editPopup));
@@ -88,18 +63,22 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
   editPopup.addEventListener('click', (event) => handleOverlayClick(event, editPopup));
   newCardPopup.addEventListener('click', (event) => handleOverlayClick(event, newCardPopup));
 
-  // Прикрепляем обработчик к форме
   formElement.addEventListener('submit', handleFormSubmit);
 
+  document.addEventListener('keydown', (event) => handleEscPress(event, editPopup, newCardPopup, imagePopup));
+
+  // Получение ссылок на элементы формы добавления карточки
   const addCardForm = document.forms['new-place'];
   const cardNameInput = addCardForm.querySelector('.popup__input_type_card-name');
   const cardLinkInput = addCardForm.querySelector('.popup__input_type_url');
 
+  // Функция обработки клика по кнопке лайк
   function handleLikeButtonClick(cardElement) {
     const likeButton = cardElement.querySelector('.card__like-button');
     likeButton.classList.toggle('card__like-button_is-active');
   }
 
+  // Функция обработки отправки формы добавления карточки
   function handleAddCardSubmit(evt) {
     evt.preventDefault();
 
@@ -119,8 +98,10 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
     closePopup(newCardPopup);
   }
 
+  // Добавление слушателя события отправки формы добавления карточки
   addCardForm.addEventListener('submit', handleAddCardSubmit);
 
+  // Функция отрисовки карточек на странице
   function renderCards(cards) {
     cards.forEach(function (cardData) {
       const cardElement = createCard(cardData, deleteCard, likeCard, openImagePopup);
@@ -128,5 +109,7 @@ import { createCard, deleteCard, likeCard, initialCards } from '../scripts/cards
     });
   }
 
+  // Отрисовка карточек при загрузке страницы
   renderCards(initialCards);
+
 })();

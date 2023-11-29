@@ -1,38 +1,3 @@
-export function createCard(cardData, deleteCallback, likeCallback, openImageCallback) {
-  const cardTemplate = document.querySelector('#card-template');
-  const cardElement = cardTemplate.content.querySelector('.card').cloneNode(true);
-  const cardImage = cardElement.querySelector('.card__image');
-  const cardTitle = cardElement.querySelector('.card__title');
-  const cardDeleteButton = cardElement.querySelector('.card__delete-button');
-  const cardLikeButton = cardElement.querySelector('.card__like-button');
-
-  cardImage.src = cardData.link;
-  cardImage.alt = cardData.name;
-  cardTitle.textContent = cardData.name;
-
-  cardDeleteButton.addEventListener('click', function () {
-    deleteCallback(cardElement);
-  });
-
-  cardLikeButton.addEventListener('click', function () {
-    likeCallback(cardLikeButton);
-  });
-
-  cardImage.addEventListener('click', function () {
-    openImageCallback(cardData);
-  });
-
-  return cardElement;
-}
-
-export function deleteCard(cardElement) {
-  cardElement.remove();
-}
-
-export function likeCard(likeButton) {
-  likeButton.classList.toggle('card__like-button_is-active');
-}
-
 export const initialCards = [
   {
     name: "Холмы",
