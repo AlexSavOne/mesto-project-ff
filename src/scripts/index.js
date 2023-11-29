@@ -14,7 +14,7 @@ import { initialCards } from './cards';
   const newCardPopup = document.querySelector('.popup_type_new-card');
   const closeEditPopupButton = editPopup.querySelector('.popup__close');
   const closeNewCardPopupButton = newCardPopup.querySelector('.popup__close');
-  const formElement = document.forms['edit-profile'];
+  const formElement = document.querySelector('.popup_type_edit .popup__form');
   const nameInput = formElement.querySelector('.popup__input_type_name');
   const jobInput = formElement.querySelector('.popup__input_type_description');
   const profileTitle = document.querySelector('.profile__title');
@@ -56,19 +56,17 @@ import { initialCards } from './cards';
   }
 
   // Добавление слушателей событий
-  editButton.addEventListener('click', openEditPopup);
+  editButton.addEventListener('click', openEditPopup); // открыть
   addButton.addEventListener('click', openNewCardPopup);
-  closeEditPopupButton.addEventListener('click', () => closePopup(editPopup));
+  closeEditPopupButton.addEventListener('click', () => closePopup(editPopup)); // закрыть
   closeNewCardPopupButton.addEventListener('click', () => closePopup(newCardPopup));
-  editPopup.addEventListener('click', (event) => handleOverlayClick(event, editPopup));
+  editPopup.addEventListener('click', (event) => handleOverlayClick(event, editPopup)); // оверлей клик
   newCardPopup.addEventListener('click', (event) => handleOverlayClick(event, newCardPopup));
-
-  formElement.addEventListener('submit', handleFormSubmit);
-
-  document.addEventListener('keydown', (event) => handleEscPress(event, editPopup, newCardPopup, imagePopup));
+  formElement.addEventListener('submit', handleFormSubmit); // сабмит
+  document.addEventListener('keydown', (event) => handleEscPress(event, editPopup, newCardPopup, imagePopup)); // esc
 
   // Получение ссылок на элементы формы добавления карточки
-  const addCardForm = document.forms['new-place'];
+  const addCardForm = document.querySelector('form[name="new-place"]');
   const cardNameInput = addCardForm.querySelector('.popup__input_type_card-name');
   const cardLinkInput = addCardForm.querySelector('.popup__input_type_url');
 

@@ -1,7 +1,6 @@
 // Функция открытия попапа
-
 export function openPopup(popup) {
-  popup.classList.add('popup_is-opened', 'popup_is-animated');
+  popup.classList.add('popup_is-animated');
   document.addEventListener('keydown', handleEscPress);
   popup.querySelector('.popup__close').addEventListener('click', function () {
     closePopup(popup);
@@ -9,6 +8,10 @@ export function openPopup(popup) {
   popup.addEventListener('click', function (event) {
     handleOverlayClick(event, popup);
   });
+
+  setTimeout(() => {
+    popup.classList.add('popup_is-opened');
+  }, 10);
 }
 
 // Функция закрытия попапа
