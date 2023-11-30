@@ -40,5 +40,5 @@ export function deleteCard(cardElement) {
 
 // Эта функция переключает класс 'card__like-button_is-active' на предоставленном элементе кнопки лайка
 export function likeCard(likeButton) {
-  likeButton.classList.toggle('card__like-button_is-active');
+    likeButton.classList.toggle('card__like-button_is-active');
 }
