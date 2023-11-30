@@ -1,7 +1,7 @@
 // Подключение стилей и необходимых функций из других модулей
 import '../pages/index.css';
 import { createCard, deleteCard, likeCard } from './card';
-import { openPopup, closePopup, closeByEscape } from './modal';
+import { openPopup, closePopup, handleOverlayClick } from './modal';
 import { initialCards } from './cards';
 
 (function () {
@@ -28,13 +28,14 @@ import { initialCards } from './cards';
   addButton.addEventListener('mousedown', openNewCardPopup); // Открыть новую карточку
   formElement.addEventListener('submit', handleFormSubmit); // Сабмит формы
   addCardForm.addEventListener('submit', handleAddCardSubmit); // Сабмит формы добавления карточки
-  document.addEventListener('keydown', closeByEscape); // esc
   popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
       if (evt.target.classList.contains('popup_opened') || evt.target.classList.contains('popup__close')) {
         closePopup(popup);
       }
     });
+
+    popup.addEventListener('mousedown', (evt) => handleOverlayClick(evt, popup));
   }); // Оверлей и кнопка закрытия
 
   // Функция открытия попапа для редактирования профиля

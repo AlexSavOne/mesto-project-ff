@@ -2,12 +2,6 @@
 export function openPopup(popup) {
   popup.classList.add('popup_is-animated');
   document.addEventListener('keydown', closeByEscape);
-  popup.querySelector('.popup__close').addEventListener('mousedown', function () {
-    closePopup(popup);
-  });
-  popup.addEventListener('mousedown', function (event) {
-    handleOverlayClick(event, popup);
-  });
 
   setTimeout(() => {
     popup.classList.add('popup_is-opened');
