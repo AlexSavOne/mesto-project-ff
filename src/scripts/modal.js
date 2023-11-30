@@ -14,7 +14,6 @@ export function openPopup(popup) {
   }, 10);
 }
 
-
 // Функция закрытия попапа
 export function closePopup(popup) {
   popup.classList.remove('popup_is-opened');
@@ -30,7 +29,6 @@ export function closeByEscape(evt) {
     }
   }
 }
-
 
 // Обработчик клика по оверлею
 export function handleOverlayClick(event, popup) {

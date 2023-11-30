@@ -1,7 +1,7 @@
 // Подключение стилей и необходимых функций из других модулей
 import '../pages/index.css';
 import { createCard, deleteCard, likeCard } from './card';
-import { openPopup, closePopup, handleOverlayClick, closeByEscape } from './modal';
+import { openPopup, closePopup, closeByEscape } from './modal';
 import { initialCards } from './cards';
 
 (function () {
@@ -36,7 +36,6 @@ import { initialCards } from './cards';
       }
     });
   }); // Оверлей и кнопка закрытия
-
 
   // Функция открытия попапа для редактирования профиля
   function openEditPopup() {
