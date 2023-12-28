@@ -1,8 +1,17 @@
 // Подключение стилей и необходимых функций из других модулей
 import '../pages/index.css';
+import * as api from './api';
+import { fetchUserData } from './api';
+import { updateProfileData as updateProfile } from './api';
 import { createCard, deleteCard, likeCard } from './card';
 import { openPopup, closePopup, handleOverlayClick } from './modal';
 import { initialCards } from './cards';
+import { enableValidation, hideValidationErrors, setEventListeners } from './validation';
+
+
+// Переменные для токена и идентификатора группы
+const token = '59782435-3fd9-495a-94ec-e14973df2cd5';
+const cohortId = 'wff-cohort-3';
 
 (function () {
   // Получение ссылок на DOM-элементы страницы
@@ -24,10 +33,73 @@ import { initialCards } from './cards';
   const cardNameInput = addCardForm.querySelector('.popup__input_type_card-name'); // Поле ввода имени карточки
   const cardLinkInput = addCardForm.querySelector('.popup__input_type_url'); // Поле ввода URL карточки
 
-  editButton.addEventListener('mousedown', openEditPopup); // Открыть редактирование
+  // Вызов функций при взаимодействии пользователя
+  editButton.addEventListener('mousedown', async () => {
+    await fetchUserData();
+    openEditPopup();
+  });
   addButton.addEventListener('mousedown', openNewCardPopup); // Открыть новую карточку
-  formElement.addEventListener('submit', handleFormSubmit); // Сабмит формы
-  addCardForm.addEventListener('submit', handleAddCardSubmit); // Сабмит формы добавления карточки
+  formElement.addEventListener('submit', async (evt) => {
+    evt.preventDefault();
+    const newName = nameInput.value;
+    const newDescription = jobInput.value;
+
+    try {
+      await updateProfile(newName, newDescription);
+      // Получение обновленных данных пользователя
+      const userData = await fetchUserData();
+
+      // Обновление DOM с новыми данными пользователя
+      profileTitle.textContent = userData.name;
+      profileDescription.textContent = userData.about;
+
+      // Закрытие попапа редактирования
+      closePopup(editPopup);
+    } catch (error) {
+      console.error('Ошибка при обновлении профиля:', error.message);
+    }
+  });
+  addCardForm.addEventListener('submit', async (evt) => {
+    evt.preventDefault();
+    const cardName = cardNameInput.value;
+    const cardLink = cardLinkInput.value;
+
+    try {
+      // Добавим вызов функции addNewCard и обработку ошибок
+      const newCardData = await api.addNewCard(cardName, cardLink);
+
+      // Создаем карточку с использованием данных, полученных после успешного добавления
+      const newCardElement = createCard(newCardData, deleteCard, likeCard, openImagePopup);
+
+      // Вставляем новую карточку в начало списка
+      placesList.prepend(newCardElement);
+
+      addCardForm.reset();
+      hideValidationErrors(addCardForm);
+      closePopup(newCardPopup);
+    } catch (error) {
+      console.error('Ошибка при добавлении новой карточки:', error.message);
+      // Добавьте обработку ошибок, например, отображение пользователю сообщения об ошибке
+    }
+  });
+  // Загрузка данных пользователя и карточек при загрузке страницы
+  Promise.all([api.fetchUserData(), api.getInitialCards()])
+    .then(([userData, cardsData]) => {
+      console.log(userData, cardsData);
+      renderCards(cardsData);
+
+      // Добавим обработчики лайков для карточек из initialCards
+      cardsData.forEach(cardData => {
+        const cardElement = placesList.querySelector(`[data-id="${cardData._id}"]`);
+        if (cardElement) {
+          const likeButton = cardElement.querySelector('.card__like-button');
+          likeButton.addEventListener('click', () => likeCard(likeButton, cardData._id, false));
+
+        }
+      });
+    });
+
+
   popups.forEach((popup) => {
     popup.addEventListener('mousedown', (evt) => {
       if (evt.target.classList.contains('popup_opened') || evt.target.classList.contains('popup__close')) {
@@ -38,16 +110,32 @@ import { initialCards } from './cards';
     popup.addEventListener('mousedown', (evt) => handleOverlayClick(evt, popup));
   }); // Оверлей и кнопка закрытия
 
+  enableValidation({
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'popup__button_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__error_visible'
+  });
+
+
   // Функция открытия попапа для редактирования профиля
   function openEditPopup() {
+    hideValidationErrors(formElement);
+
     nameInput.value = profileTitle.textContent;
     jobInput.value = profileDescription.textContent;
+
+    setEventListeners(formElement);
 
     openPopup(editPopup);
   }
 
   // Функция открытия попапа для добавления новой карточки
   function openNewCardPopup() {
+    addCardForm.reset();
+    hideValidationErrors(addCardForm);
     openPopup(newCardPopup);
   }
 
@@ -87,13 +175,15 @@ import { initialCards } from './cards';
     placesList.prepend(newCardElement);
 
     addCardForm.reset();
+    hideValidationErrors(addCardForm);
     closePopup(newCardPopup);
   }
 
   // Функция отрисовки карточек на странице
   function renderCards(cards) {
     cards.forEach(function (cardData) {
-      const cardElement = createCard(cardData, deleteCard, likeCard, openImagePopup);
+      const isOwn = cardData.owner && cardData.owner._id === '59782435-3fd9-495a-94ec-e14973df2cd5';
+      const cardElement = createCard(cardData, deleteCard, likeCard, openImagePopup, isOwn);
       placesList.appendChild(cardElement);
     });
   }

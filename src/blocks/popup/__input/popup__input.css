@@ -14,6 +14,19 @@
   margin-bottom: 0;
 }
 
+.form__input_type_error {
+  border-bottom-color: red;
+
+  /* Нижняя рамка становится красной всякий раз,
+  когда введённые данные некорректны */
+}
+
+.form__input-error_active {
+  color: red;
+  font-size: 14px;
+}
+
+
 @media screen and (max-width: 568px) {
   .popup__title {
     font-size: 12px;
