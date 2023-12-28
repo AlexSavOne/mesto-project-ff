@@ -16,9 +16,6 @@
 
 .form__input_type_error {
   border-bottom-color: red;
-
-  /* Нижняя рамка становится красной всякий раз,
-  когда введённые данные некорректны */
 }
 
 .form__input-error_active {

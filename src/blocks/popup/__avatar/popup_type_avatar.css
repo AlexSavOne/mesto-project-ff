@@ -1,0 +1,32 @@
+.popup_type_avatar {
+  display: none;
+}
+
+.popup_type_avatar .popup__content {
+  max-width: 460px;
+}
+
+.popup_type_avatar .popup__form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.popup_type_avatar .popup__input {
+  width: 100%;
+}
+
+.popup_type_avatar .popup__button {
+  margin-top: 15px;
+}
+
+.popup_type_avatar .popup__content .popup__image {
+  width: 100%;
+  border-radius: 8px;
+  transition: filter 0.3s ease-in-out;
+}
+
+.popup_type_avatar .popup__content .popup__image:hover {
+  filter: brightness(80%);
+  cursor: pointer;
+}

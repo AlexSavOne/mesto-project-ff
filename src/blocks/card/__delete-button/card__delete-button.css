@@ -2,7 +2,6 @@
   width: 18px;
   height: 18px;
   background: transparent url('../../../images/delete-icon.svg') center no-repeat;
-  /*Потом это будет из модификатора*/
   background-size: 18px 18px;
   border: none;
   cursor: pointer;
@@ -16,6 +15,7 @@
   -ms-transition: 0.3s;
   -o-transition: 0.3s;
   transition: 0.3s;
+  display: flex;
 }
 
 .card__delete-button:hover {

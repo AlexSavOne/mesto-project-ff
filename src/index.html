@@ -20,10 +20,13 @@
       </header>
       <main class="content">
         <section class="profile page__section">
-          <div
-            class="profile__image"
-            style="background-image: url('<%=require(`./images/avatar.jpg`)%>')"
-          ></div>
+          <div class="profile__image">
+            <img
+              src="<%=require('./images/avatar.jpg')%>"
+              alt="Аватар"
+              class="profile__img"
+            />
+          </div>
           <div class="profile__info">
             <h1 class="profile__title">Жак-Ив Кусто</h1>
             <button
@@ -132,6 +135,31 @@
         </div>
       </div>
     </div>
+    <div class="popup popup_type_avatar">
+      <div class="popup__content">
+        <button type="button" class="popup__close"></button>
+        <h3 class="popup__title">Редактировать аватар</h3>
+        <form class="popup__form" name="edit-avatar" novalidate>
+          <label class="form__field">
+            <input
+              id="popup-input-avatar"
+              type="url"
+              name="avatar"
+              class="popup__input popup__input_type_avatar"
+              placeholder="Ссылка на новый аватар"
+              required
+            />
+            <span class="popup-input-error popup-input-avatar-error"></span>
+          </label>
+          <button
+            type="submit"
+            class="button popup__button popup__button_disabled"
+          >
+            Сохранить
+          </button>
+        </form>
+      </div>
+    </div>
 
     <template id="card-template">
       <li class="places__item card">
@@ -139,8 +167,10 @@
         <button type="button" class="card__delete-button"></button>
         <div class="card__description">
           <h2 class="card__title"></h2>
-          <button type="button" class="card__like-button"></button>
-          <p class="card__like-count"></p>
+          <div class="card__like-block">
+            <button type="button" class="card__like-button"></button>
+            <p class="card__like-count"></p>
+          </div>
         </div>
       </li>
     </template>

@@ -1,23 +1,31 @@
+// Конфигурация API, содержащая базовый URL и заголовки для запросов
 const config = {
-  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-3', // Замените на ваш реальный baseUrl
+  baseUrl: 'https://nomoreparties.co/v1/wff-cohort-3',
   headers: {
-    authorization: '59782435-3fd9-495a-94ec-e14973df2cd5', // Замените на ваш реальный токен
-    'Content-Type': 'application/json'
-  }
-}
+    authorization: '59782435-3fd9-495a-94ec-e14973df2cd5',
+    'Content-Type': 'application/json',
+  },
+};
 
+// Функция для выполнения запросов к API
 export const fetchApi = async (url, method, body) => {
   try {
+    // Выполняем запрос с использованием fetch
     const response = await fetch(`${config.baseUrl}${url}`, {
       method,
       headers: config.headers,
       body: JSON.stringify(body),
     });
 
+    // Обработка ошибок HTTP
     if (!response.ok) {
+      console.error(`Ошибка запроса: ${response.status}`);
+      const responseBody = await response.text();
+      console.error(`Тело ответа: ${responseBody}`);
       throw new Error(`Ошибка запроса: ${response.status}`);
     }
 
+    // Возвращаем JSON-данные в случае успешного запроса
     return response.json();
   } catch (error) {
     console.error('Произошла ошибка:', error.message);
@@ -25,24 +33,19 @@ export const fetchApi = async (url, method, body) => {
   }
 };
 
-export const getInitialCards = async () => {
-  try {
-    return await fetchApi('/cards', 'GET');
-  } catch (error) {
-    console.error('Произошла ошибка при получении карточек:', error.message);
-    throw error;
-  }
-};
-
+// Функция для получения данных пользователя
 export const fetchUserData = async () => {
   try {
-    return await fetchApi('/users/me', 'GET');
+    const userData = await fetchApi('/users/me', 'GET');
+    console.log('Данные пользователя:', userData);
+    return userData;
   } catch (error) {
     console.error('Произошла ошибка при получении данных пользователя:', error.message);
     throw error;
   }
 };
 
+// Функция для обновления данных профиля пользователя
 export const updateProfileData = async (name, about) => {
   try {
     console.log('Обновление профиля с данными:', name, about);
@@ -55,8 +58,18 @@ export const updateProfileData = async (name, about) => {
   }
 };
 
+// Функция для получения начальных карточек
+export const getInitialCards = async () => {
+  try {
+    const response = await fetchApi('/cards', 'GET');
+    return response;
+  } catch (error) {
+    console.error('Произошла ошибка при получении карточек:', error.message);
+    throw error;
+  }
+};
 
-
+// Функция для добавления новой карточки
 export const addNewCard = async (name, link) => {
   try {
     return await fetchApi('/cards', 'POST', { name, link });
@@ -66,12 +79,56 @@ export const addNewCard = async (name, link) => {
   }
 };
 
+// Функция для удаления карточки по её ID
+export const deleteCard = async (cardId) => {
+  try {
+    const response = await fetchApi(`/cards/${cardId}`, 'DELETE');
+    if (!response.ok) {
+      throw new Error(`Ошибка запроса: ${response.status}`);
+    }
+
+    console.log(`Карточка с ID ${cardId} успешно удалена с сервера.`);
+
+    return response.json();
+  } catch (error) {
+    console.error(`Произошла ошибка при удалении карточки с ID ${cardId}:`, error.message);
+    throw error;
+  }
+};
+
+// Функция для постановки/снятия лайка с карточки
 export const likeCardRequest = async (cardId, isLiked) => {
   const method = isLiked ? 'DELETE' : 'PUT';
   try {
-    return await fetchApi(`/cards/likes/${cardId}`, method);
+    const response = await fetch(`${config.baseUrl}/cards/likes/${cardId}`, {
+      method: method,
+      headers: config.headers,
+    });
+
+    if (!response.ok) {
+      throw new Error(`Ошибка запроса: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data;
+
   } catch (error) {
     console.error('Произошла ошибка при обработке лайка:', error.message);
+    throw error;
+  }
+};
+
+// Функция для обновления аватарки пользователя
+export const updateAvatar = async (avatarUrl) => {
+  try {
+    const result = await fetchApi('/users/me/avatar', 'PATCH', { avatar: avatarUrl });
+    console.log('Результат обновления аватарки:', result);
+
+    // Получаем обновленные данные пользователя после обновления аватарки
+    const updatedUserData = await fetchUserData();
+    return updatedUserData;
+  } catch (error) {
+    console.error('Ошибка при обновлении аватарки:', error.message);
     throw error;
   }
 };

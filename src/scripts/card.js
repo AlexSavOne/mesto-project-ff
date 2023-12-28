@@ -1,80 +1,124 @@
-import * as api from './api';
-
+// Объект, представляющий текущего пользователя
 const currentUser = {
   token: '59782435-3fd9-495a-94ec-e14973df2cd5',
   cohortId: 'wff-cohort-3',
 };
 
-export function createCard(cardData, deleteCallback, likeCallback, openImageCallback) {
+// Функция для создания HTML-элемента карточки
+export function createCard(cardData, deleteCallback, likeCallback, openImageCallback, isOwn) {
+  // Получаем шаблон карточки и клонируем его
   const cardTemplate = document.querySelector('#card-template');
   const cardElement = cardTemplate.content.querySelector('.card').cloneNode(true);
+
+  // Получаем элементы карточки
   const cardImage = cardElement.querySelector('.card__image');
   const cardTitle = cardElement.querySelector('.card__title');
   const cardDeleteButton = cardElement.querySelector('.card__delete-button');
   const cardLikeButton = cardElement.querySelector('.card__like-button');
   const likeCount = cardElement.querySelector('.card__like-count');
 
-  // Устанавливаем источник изображения и атрибут alt на основе предоставленных данных карточки
+  // Устанавливаем данные карточки
+  likeCount.textContent = Array.isArray(cardData.likes) ? cardData.likes.length : 0;
   cardImage.src = cardData.link;
   cardImage.alt = cardData.name;
-  // Устанавливаем текстовое содержимое заголовка карточки на основе предоставленных данных карточки
   cardTitle.textContent = cardData.name;
-  likeCount.textContent = Array.isArray(cardData.likes) ? cardData.likes.length : 0;
 
-  // Добавляем слушатель событий на кнопку удаления для вызова обратного вызова удаления при клике
-  cardDeleteButton.addEventListener('click', function () {
-    deleteCallback(cardElement);
-  });
+  // Функция для обновления состояния лайка
+  const updateLikeState = (newLikeState) => {
+    if (likeCount && cardLikeButton) {
+      let currentLikeCount = parseInt(likeCount.textContent, 10);
 
-  // Добавляем слушатель событий на кнопку лайка для вызова обратного вызова лайка при клике
-  cardLikeButton.addEventListener('click', function () {
-    const cardId = cardData && cardData._id; // Получаем id карточки
+      if (newLikeState || currentLikeCount > 0) {
+        likeCount.textContent = newLikeState ? currentLikeCount + 1 : currentLikeCount - 1;
+      }
+
+      cardLikeButton.classList.toggle('card__like-button_is-active', newLikeState);
+    }
+
+    // Обновляем состояние лайка в локальном хранилище
+    updateLikeStateInLocalStorage(cardData._id, newLikeState);
+  };
+
+  // Инициализируем состояние лайка из локального хранилища
+  updateLikeState(getLikeStateFromLocalStorage(cardData._id));
+
+  // Обработчик события клика по кнопке лайка
+  cardLikeButton.addEventListener('click', async function () {
+    const cardId = cardData && cardData._id;
     if (cardId) {
-      const userLikes = cardData.likes || [];
-      likeCallback(cardLikeButton, cardId, userLikes.some((like) => like._id === currentUser.token));
+      try {
+        const newLikeState = !cardLikeButton.classList.contains('card__like-button_is-active');
+        await likeCallback(cardLikeButton, cardId, newLikeState);
+        updateLikeState(newLikeState);
+      } catch (error) {
+        console.error('Ошибка при обработке лайка:', error.message);
+      }
     } else {
       console.error('Ошибка: ID карточки не определен.');
     }
   });
 
-  // Добавляем слушатель событий на изображение карточки для вызова обратного вызова открытия изображения при клике
+  // Обработчик события клика по изображению карточки
   cardImage.addEventListener('click', function () {
     openImageCallback(cardData);
   });
 
-  // Возвращаем созданный элемент карточки
-  return cardElement;
+  // Добавляем условие для отображения/скрытия иконки удаления
+  if (isOwn) {
+    cardDeleteButton.addEventListener('click', function () {
+      deleteCallback(cardData._id, cardElement);
+      cardElement.remove();
+    });
+  } else {
+    cardDeleteButton.style.display = 'none'; // Скрываем иконку удаления
+  }
+
+  return cardElement; // Возвращаем созданный HTML-элемент карточки
 }
 
-// Эта функция удаляет предоставленный элемент карточки из DOM
-export function deleteCard(cardElement) {
-  cardElement.remove();
-}
-
+// Функция для выполнения запроса на постановку/снятие лайка с карточки
 export const likeCard = async (likeButton, cardId, isLiked) => {
-  const url = `https://nomoreparties.co/v1/${currentUser.cohortId}/cards/${cardId}/likes`;
-
-
   try {
-    const response = await fetch(url, {
-      method: isLiked ? 'DELETE' : 'PUT',
+    const method = isLiked ? 'DELETE' : 'PUT';
+
+    // Выполняем запрос к API для постановки/снятия лайка
+    const response = await fetch(`https://nomoreparties.co/v1/${currentUser.cohortId}/cards/likes/${cardId}`, {
+      method: method,
       headers: {
         authorization: currentUser.token,
+        'Content-Type': 'application/json',
       },
     });
 
+    // Обработка ошибок HTTP
     if (!response.ok) {
       throw new Error(`Ошибка запроса: ${response.status}`);
     }
 
+    // Получаем данные из ответа и обновляем состояние лайка
     const data = await response.json();
+    updateLikeCountAndState(likeButton, data.likes.length, !isLiked);
 
-    likeButton.classList.toggle('card__like-button_is-active', isLiked);
-    const likeCount = likeButton.closest('.card').querySelector('.card__like-count');
-    likeCount.textContent = data.likes.length;
   } catch (error) {
     console.error('Ошибка при выполнении запроса:', error.message);
     throw error;
   }
 };
 
+// Функция для получения состояния лайка из локального хранилища
+function getLikeStateFromLocalStorage(cardId) {
+  const likeState = localStorage.getItem(`likeState_${cardId}`);
+  return likeState === 'true';
+}
+
+// Функция для обновления состояния лайка в локальном хранилище
+function updateLikeStateInLocalStorage(cardId, isLiked) {
+  localStorage.setItem(`likeState_${cardId}`, JSON.stringify(isLiked));
+}
+
+// Функция для обновления счетчика лайков и состояния кнопки лайка
+function updateLikeCountAndState(likeButton, newLikeCount, newLikeState) {
+  const likeCount = likeButton.closest('.card').querySelector('.card__like-count');
+  likeCount.textContent = newLikeCount;
+  likeButton.classList.toggle('card__like-button_is-active', newLikeState);
+}
