@@ -1,6 +1,11 @@
+// Функция переключения состояния кнопки сохранения в зависимости от валидности формы
+const toggleSaveButtonState = (saveButton, inputList) => {
+  saveButton.disabled = !inputList.every((formInput) => formInput.validity.valid);
+};
+
 // Функция отображения ошибки валидации для конкретного поля ввода
-const showInputError = (formElement, formInput, errorMessage) => {
-  const formError = formElement.querySelector(`.${formInput.id}-error`);
+const showInputError = (profileForm, formInput, errorMessage) => {
+  const formError = profileForm.querySelector(`.${formInput.id}-error`);
 
   formInput.classList.add('form__input_type_error');
   formInput.setAttribute('data-error-message', errorMessage);
@@ -9,8 +14,8 @@ const showInputError = (formElement, formInput, errorMessage) => {
 };
 
 // Функция скрытия ошибки валидации для конкретного поля ввода
-const hideInputError = (formElement, formInput) => {
-  const formError = formElement.querySelector(`.${formInput.id}-error`);
+const hideInputError = (profileForm, formInput) => {
+  const formError = profileForm.querySelector(`.${formInput.id}-error`);
 
   formInput.classList.remove('form__input_type_error');
   formError.classList.remove('form__input-error_active');
@@ -18,82 +23,64 @@ const hideInputError = (formElement, formInput) => {
 };
 
 // Функция проверки валидности конкретного поля ввода
-const isValid = (formElement, formInput) => {
-  // Регулярные выражения для валидации
-  const allowedCharactersRegex = /^[a-zA-Zа-яА-ЯёЁ\s-]*$/;
-  const disallowedDigitsRegex = /\d/;
-  const urlRegex = /^(ftp|http|https):\/\/[^ "]+$/;
-
-  // Функция отображения ошибки с указанным сообщением
-  const showError = (errorMessage) => {
-    showInputError(formElement, formInput, errorMessage);
-  };
-
-  // Проверка различных условий валидации и вызов showError при несоответствии
-  if (formInput.validity.valueMissing) {
-    showError('Вы пропустили это поле.');
-  } else if (formInput.type === 'url' && !urlRegex.test(formInput.value)) {
-    showError('Введите адрес сайта.');
-  } else if (formInput.type !== 'url' && (!allowedCharactersRegex.test(formInput.value) || disallowedDigitsRegex.test(formInput.value))) {
-    showError('Пожалуйста, используйте только буквы, дефис и пробелы, без цифр.');
-  } else if (formInput.type !== 'url' && formInput.validity.tooShort) {
-    showError(formInput.validationMessage);
+const isValid = (profileForm, formInput) => {
+  if (formInput.validity.patternMismatch) {
+    formInput.setCustomValidity(formInput.dataset.errorMessage);
   } else {
-    hideInputError(formElement, formInput);
+    formInput.setCustomValidity('');
   }
 
-  // Переключение состояния кнопки сохранения формы
-  toggleSaveButtonState(formElement);
+  if (!formInput.validity.valid) {
+    showInputError(profileForm, formInput, formInput.validationMessage);
+  } else {
+    hideInputError(profileForm, formInput);
+  }
 };
 
 // Функция установки обработчиков событий для полей ввода формы
-export const setEventListeners = (formElement) => {
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
+export const setEventListeners = (profileForm, validationConfig) => {
+  const inputList = Array.from(profileForm.querySelectorAll(validationConfig.inputSelector));
+  const saveButton = profileForm.querySelector(validationConfig.submitButtonSelector);
 
-  // Функция обработки события ввода в поле ввода
-  const handleInput = () => {
-    inputList.forEach((formInput) => {
-      isValid(formElement, formInput);
+  inputList.forEach((formInput) => {
+    formInput.addEventListener('input', () => {
+      isValid(profileForm, formInput);
+      toggleSaveButtonState(saveButton, inputList);
     });
-    toggleSaveButtonState(formElement);
-  };
+  });
+};
 
-  // Установка обработчика для каждого поля ввода
+// Функция включения валидации для формы с заданными параметрами
+export const enableValidation = (validationConfig) => {
+  const formList = Array.from(document.querySelectorAll(validationConfig.formSelector));
+
+  formList.forEach((profileForm) => {
+    setEventListeners(profileForm, validationConfig);
+  });
+};
+
+// Функция очистки состояния валидации для конкретной формы
+export const clearValidation = (profileForm, validationConfig) => {
+  const inputList = Array.from(profileForm.querySelectorAll(validationConfig.inputSelector));
+  const saveButton = profileForm.querySelector(validationConfig.submitButtonSelector);
+
   inputList.forEach((formInput) => {
-    formInput.addEventListener('input', handleInput);
+    hideInputError(profileForm, formInput);
   });
 
-  // Инициализация состояния кнопки сохранения
-  toggleSaveButtonState(formElement);
+  profileForm.reset();
+  toggleSaveButtonState(saveButton, inputList);
 };
 
-// Функция включения валидации для всех форм на странице
-export const enableValidation = () => {
-  const formList = Array.from(document.querySelectorAll('.popup__form'));
-
-  // Установка обработчиков событий для каждой формы
-  formList.forEach((formElement) => {
-    setEventListeners(formElement);
-  });
-};
-
-// Функция переключения состояния кнопки сохранения в зависимости от валидности формы
-const toggleSaveButtonState = (formElement) => {
-  const saveButton = formElement.querySelector('.popup__form .popup__button');
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
-  const containsNumbers = inputList.some((formInput) => formInput.type !== 'url' && /\d/.test(formInput.value));
-  const isUrlInputValid = inputList.some((formInput) => formInput.type === 'url' && !formInput.validity.valid);
-
-  saveButton.disabled = !inputList.every((formInput) => formInput.validity.valid) || containsNumbers || isUrlInputValid;
-};
-
-
-// Функция скрытия всех ошибок валидации для конкретной формы
-export const hideValidationErrors = (formElement) => {
-  const inputList = Array.from(formElement.querySelectorAll('.popup__input'));
-
-  // Скрытие ошибок для каждого поля ввода
-  inputList.forEach((formInput) => {
-    hideInputError(formElement, formInput);
-  });
-};
+// Настройка валидации для форм, используя переданные параметры
+enableValidation({
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible',
+  urlRegex: /^(ftp|http|https):\/\/[^ "]+$/,
+  allowedCharactersRegex: /^[a-zA-Zа-яА-ЯёЁ\s-]*$/,
+  disallowedDigitsRegex: /\d/,
+});

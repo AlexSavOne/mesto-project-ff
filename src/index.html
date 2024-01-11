@@ -60,6 +60,8 @@
                 required
                 minlength="2"
                 maxlength="40"
+                pattern="[А-Яа-яA-Za-zЁёІіЇїЄєҐґ]+"
+                data-error-message="Введите имя"
               />
               <span class="popup-input-error popup-input-name-error"></span>
             </label>
@@ -73,6 +75,8 @@
                 required
                 minlength="2"
                 maxlength="200"
+                pattern="[А-Яа-яA-Za-zЁёІіЇїЄєҐґ]+"
+                data-error-message="Введите занятие"
               />
               <span
                 class="popup-input-error popup-input-description-error"
@@ -102,6 +106,7 @@
                 required
                 minlength="2"
                 maxlength="30"
+                data-error-message="Введите название"
               />
               <span
                 class="popup-input-error popup-input-place-name-error"
@@ -115,6 +120,7 @@
                 class="popup__input popup__input_type_url"
                 placeholder="Ссылка на картинку"
                 required
+                data-error-message="Введите url"
               />
               <span class="popup-input-error popup-input-url-error"></span>
             </label>
