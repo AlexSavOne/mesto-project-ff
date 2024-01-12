@@ -4,11 +4,11 @@ import * as api from './api';
 import { fetchUserData, updateProfileData, deleteCard } from './api';
 import { createCard } from './card';
 import { openPopup, closePopup, handleOverlayClick } from './modal';
-import { enableValidation, clearValidation } from './validation';
+import { enableValidation, clearValidation, validationConfig } from './validation';
+
+let userId;
 
 (function () {
-  let userId; // Идентификатор пользователя
-
   // Получение ссылок на DOM-элементы страницы
   const placesList = document.querySelector('.places__list'); // Список карточек
   const popups = document.querySelectorAll('.popup'); // Все попапы
@@ -33,6 +33,8 @@ import { enableValidation, clearValidation } from './validation';
   const avatarInput = avatarForm.querySelector('.popup__input_type_avatar'); // Поле ввода URL аватарки
   const profileImageWrapper = document.querySelector('.profile__image'); // Обертка для аватарки
 
+  enableValidation(validationConfig);
+
   // Обработчик события загрузки контента страницы
   document.addEventListener('DOMContentLoaded', async () => {
     try {
@@ -49,18 +51,11 @@ import { enableValidation, clearValidation } from './validation';
       }
 
       avatarForm.reset();
-      clearValidation(avatarForm, {
-        inputSelector: '.popup_type_avatar .popup__input',
-        submitButtonSelector: '.popup_type_avatar .popup__button',
-        inactiveButtonClass: 'popup__button_disabled',
-        inputErrorClass: 'popup__input_type_error',
-        errorClass: 'popup__error_visible'
-      });
+      clearValidation(avatarForm, validationConfig);
     } catch (error) {
       console.error('Ошибка при получении данных пользователя:', error);
     }
   });
-
 
   // Обработчик клика по кнопке редактирования профиля
   editButton.addEventListener('click', () => {
@@ -79,14 +74,7 @@ import { enableValidation, clearValidation } from './validation';
   // Обработчик клика по изображению профиля для открытия попапа смены аватарки
   profileImageWrapper.addEventListener('click', () => {
     avatarForm.reset();
-    clearValidation(avatarForm, {
-      formSelector: '.popup_type_avatar .popup__form',
-      inputSelector: '.popup_type_avatar .popup__input',
-      submitButtonSelector: '.popup_type_avatar .popup__button',
-      inactiveButtonClass: 'popup__button_disabled',
-      inputErrorClass: 'popup__input_type_error',
-      errorClass: 'popup__error_visible'
-    });
+    clearValidation(avatarForm, validationConfig);
     openPopup(avatarPopup);
   });
 
@@ -145,7 +133,7 @@ import { enableValidation, clearValidation } from './validation';
       const cardData = await api.addNewCard(cardNameInput.value, cardLinkInput.value);
 
       // Создание DOM-элемента карточки и добавление его в список
-      const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, { _id: userId });
+      const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, userId);
       placesList.prepend(newCardElement);
 
       // Сброс формы и закрытие попапа
@@ -173,7 +161,7 @@ import { enableValidation, clearValidation } from './validation';
 
       // Создание DOM-элементов карточек и добавление их в список
       cardsData.forEach(cardData => {
-        const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, userData);
+        const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, userId);
         placesList.appendChild(newCardElement);
       });
     })
@@ -199,38 +187,15 @@ import { enableValidation, clearValidation } from './validation';
 
   // Функция открытия редактирования профиля
   function openEditPopup() {
-    clearValidation(profileForm, {
-      formSelector: '.popup_type_edit .popup__form',
-      inputSelector: '.popup_type_edit .popup__input',
-      submitButtonSelector: '.popup_type_edit .popup__button',
-      inactiveButtonClass: 'popup__button_disabled',
-      inputErrorClass: 'popup__input_type_error',
-      errorClass: 'popup__error_visible'
-    });
+    clearValidation(profileForm, validationConfig);
     nameInput.value = profileTitle.textContent;
     jobInput.value = profileDescription.textContent;
-    enableValidation(profileForm, {
-      formSelector: '.popup_type_edit .popup__form',
-      inputSelector: '.popup_type_edit .popup__input',
-      submitButtonSelector: '.popup_type_edit .popup__button',
-      inactiveButtonClass: 'popup__button_disabled',
-      inputErrorClass: 'popup__input_type_error',
-      errorClass: 'popup__error_visible'
-    });
     openPopup(editPopup);
   }
 
   // Функция открытия добавления новой карточки
   function openNewCardPopup(createCardCallback, deleteCardCallback) {
     addCardForm.reset();
-    const validationConfig = {
-      formSelector: '.popup_type_new-card .popup__form',
-      inputSelector: '.popup_type_new-card .popup__input',
-      submitButtonSelector: '.popup_type_new-card .popup__button',
-      inactiveButtonClass: 'popup__button_disabled',
-      inputErrorClass: 'popup__input_type_error',
-      errorClass: 'popup__error_visible'
-    };
     clearValidation(addCardForm, validationConfig);
     openPopup(newCardPopup, createCardCallback, deleteCardCallback);
   }

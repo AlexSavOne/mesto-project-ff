@@ -71,7 +71,6 @@ export const addNewCard = async (name, link) => {
 export const deleteCard = async (cardId) => {
   try {
     await fetchApi(`/cards/${cardId}`, 'DELETE');
-    console.log(`Карточка с ID ${cardId} успешно удалена с сервера.`);
   } catch (error) {
     handleApiError(`удалении карточки с ID ${cardId}`, error);
   }

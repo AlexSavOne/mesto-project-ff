@@ -1,29 +1,42 @@
+// Переменная для конфигурации валидации
+export const validationConfig = {
+  formSelector: '.popup__form',
+  inputSelector: '.popup__input',
+  submitButtonSelector: '.popup__button',
+  inactiveButtonClass: 'popup__button_disabled',
+  inputErrorClass: 'popup__input_type_error',
+  errorClass: 'popup__error_visible'
+};
+
 // Функция переключения состояния кнопки сохранения в зависимости от валидности формы
 const toggleSaveButtonState = (saveButton, inputList) => {
   saveButton.disabled = !inputList.every((formInput) => formInput.validity.valid);
 };
 
 // Функция отображения ошибки валидации для конкретного поля ввода
-const showInputError = (profileForm, formInput, errorMessage) => {
-  const formError = profileForm.querySelector(`.${formInput.id}-error`);
+const showInputError = (form, formInput, errorMessage, validationConfig) => {
+  const formError = form.querySelector(`.${formInput.id}-error`);
 
-  formInput.classList.add('form__input_type_error');
-  formInput.setAttribute('data-error-message', errorMessage);
+  formInput.classList.add(validationConfig.inputErrorClass);
   formError.textContent = errorMessage;
-  formError.classList.add('form__input-error_active');
+  formError.classList.add(validationConfig.errorClass);
+  formError.style.color = 'red';
+  formInput.style.borderColor = 'red';
 };
 
 // Функция скрытия ошибки валидации для конкретного поля ввода
-const hideInputError = (profileForm, formInput) => {
-  const formError = profileForm.querySelector(`.${formInput.id}-error`);
+const hideInputError = (form, formInput, validationConfig) => {
+  const formError = form.querySelector(`.${formInput.id}-error`);
 
-  formInput.classList.remove('form__input_type_error');
-  formError.classList.remove('form__input-error_active');
+  formInput.classList.remove(validationConfig.inputErrorClass);
+  formError.classList.remove(validationConfig.errorClass);
   formError.textContent = '';
+  formError.style.color = '';
+  formInput.style.borderColor = '';
 };
 
 // Функция проверки валидности конкретного поля ввода
-const isValid = (profileForm, formInput) => {
+const isValid = (form, formInput, validationConfig) => {
   if (formInput.validity.patternMismatch) {
     formInput.setCustomValidity(formInput.dataset.errorMessage);
   } else {
@@ -31,20 +44,20 @@ const isValid = (profileForm, formInput) => {
   }
 
   if (!formInput.validity.valid) {
-    showInputError(profileForm, formInput, formInput.validationMessage);
+    showInputError(form, formInput, formInput.validationMessage, validationConfig);
   } else {
-    hideInputError(profileForm, formInput);
+    hideInputError(form, formInput, validationConfig);
   }
 };
 
 // Функция установки обработчиков событий для полей ввода формы
-export const setEventListeners = (profileForm, validationConfig) => {
-  const inputList = Array.from(profileForm.querySelectorAll(validationConfig.inputSelector));
-  const saveButton = profileForm.querySelector(validationConfig.submitButtonSelector);
+const setEventListeners = (form, validationConfig) => {
+  const inputList = Array.from(form.querySelectorAll(validationConfig.inputSelector));
+  const saveButton = form.querySelector(validationConfig.submitButtonSelector);
 
   inputList.forEach((formInput) => {
     formInput.addEventListener('input', () => {
-      isValid(profileForm, formInput);
+      isValid(form, formInput, validationConfig);
       toggleSaveButtonState(saveButton, inputList);
     });
   });
@@ -54,33 +67,20 @@ export const setEventListeners = (profileForm, validationConfig) => {
 export const enableValidation = (validationConfig) => {
   const formList = Array.from(document.querySelectorAll(validationConfig.formSelector));
 
-  formList.forEach((profileForm) => {
-    setEventListeners(profileForm, validationConfig);
+  formList.forEach((form) => {
+    setEventListeners(form, validationConfig);
   });
 };
 
 // Функция очистки состояния валидации для конкретной формы
-export const clearValidation = (profileForm, validationConfig) => {
-  const inputList = Array.from(profileForm.querySelectorAll(validationConfig.inputSelector));
-  const saveButton = profileForm.querySelector(validationConfig.submitButtonSelector);
+export const clearValidation = (form, validationConfig) => {
+  const inputList = Array.from(form.querySelectorAll(validationConfig.inputSelector));
+  const saveButton = form.querySelector(validationConfig.submitButtonSelector);
 
   inputList.forEach((formInput) => {
-    hideInputError(profileForm, formInput);
+    hideInputError(form, formInput, validationConfig);
   });
 
-  profileForm.reset();
+  form.reset();
   toggleSaveButtonState(saveButton, inputList);
 };
-
-// Настройка валидации для форм, используя переданные параметры
-enableValidation({
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible',
-  urlRegex: /^(ftp|http|https):\/\/[^ "]+$/,
-  allowedCharactersRegex: /^[a-zA-Zа-яА-ЯёЁ\s-]*$/,
-  disallowedDigitsRegex: /\d/,
-});
