@@ -1,12 +1,10 @@
-import { likeCard } from './api';
-
 // Функция обновления состояния кнопки лайка на карточке
-const updateLikeState = (likeButton, isLiked) => {
+export const updateLikeState = (likeButton, isLiked) => {
   likeButton.classList.toggle('card__like-button_is-active', isLiked);
 };
 
 // Функция для создания HTML-элемента карточки
-export function createCard(cardData, deleteCallback, openImageCallback, userId) {
+export function createCard(cardData, deleteCallback, openImageCallback, userId, likeCallback) {
   const cardTemplate = document.querySelector('#card-template');
   const cardElement = cardTemplate.content.querySelector('.card').cloneNode(true);
   const cardImage = cardElement.querySelector('.card__image');
@@ -28,26 +26,7 @@ export function createCard(cardData, deleteCallback, openImageCallback, userId) 
     updateLikeState(likeButton, true);
   }
 
-  // Обработчик клика по кнопке лайка
-  likeButton.addEventListener('click', async () => {
-    try {
-      const cardId = cardData && cardData._id;
-      if (cardId) {
-        const isLiked = likeButton.classList.contains('card__like-button_is-active');
-        const updatedCardData = await likeCard(cardId, isLiked);
-        if (cardData) {
-          cardData.likes = updatedCardData.likes;
-          likeCount.textContent = cardData.likes.length;
-        }
-
-        updateLikeState(likeButton, !isLiked);
-      } else {
-        console.error('Ошибка: ID карточки не определен.');
-      }
-    } catch (error) {
-      console.error('Ошибка при обработке лайка:', error.message);
-    }
-  });
+  likeButton.addEventListener('click', () => likeCallback(cardData, likeButton, likeCount));
 
   // Обработчик клика по изображению карточки
   cardImage.addEventListener('click', () => {

@@ -1,13 +1,3 @@
-// Переменная для конфигурации валидации
-export const validationConfig = {
-  formSelector: '.popup__form',
-  inputSelector: '.popup__input',
-  submitButtonSelector: '.popup__button',
-  inactiveButtonClass: 'popup__button_disabled',
-  inputErrorClass: 'popup__input_type_error',
-  errorClass: 'popup__error_visible'
-};
-
 // Функция переключения состояния кнопки сохранения в зависимости от валидности формы
 const toggleSaveButtonState = (saveButton, inputList) => {
   saveButton.disabled = !inputList.every((formInput) => formInput.validity.valid);
@@ -20,8 +10,6 @@ const showInputError = (form, formInput, errorMessage, validationConfig) => {
   formInput.classList.add(validationConfig.inputErrorClass);
   formError.textContent = errorMessage;
   formError.classList.add(validationConfig.errorClass);
-  formError.style.color = 'red';
-  formInput.style.borderColor = 'red';
 };
 
 // Функция скрытия ошибки валидации для конкретного поля ввода
@@ -31,8 +19,6 @@ const hideInputError = (form, formInput, validationConfig) => {
   formInput.classList.remove(validationConfig.inputErrorClass);
   formError.classList.remove(validationConfig.errorClass);
   formError.textContent = '';
-  formError.style.color = '';
-  formInput.style.borderColor = '';
 };
 
 // Функция проверки валидности конкретного поля ввода

@@ -1,10 +1,10 @@
 // Подключение стилей и необходимых функций из других модулей
 import '../pages/index.css';
 import * as api from './api';
-import { fetchUserData, updateProfileData, deleteCard } from './api';
-import { createCard } from './card';
+import { fetchUserData, updateProfileData, deleteCard, likeCard } from './api';
+import { createCard, updateLikeState } from './card';
 import { openPopup, closePopup, handleOverlayClick } from './modal';
-import { enableValidation, clearValidation, validationConfig } from './validation';
+import { enableValidation, clearValidation } from './validation';
 
 let userId;
 
@@ -33,6 +33,15 @@ let userId;
   const avatarInput = avatarForm.querySelector('.popup__input_type_avatar'); // Поле ввода URL аватарки
   const profileImageWrapper = document.querySelector('.profile__image'); // Обертка для аватарки
 
+  // Переменная для конфигурации валидации
+  const validationConfig = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'popup__button_disabled',
+    inputErrorClass: 'popup__input_type_error',
+    errorClass: 'popup__error_visible'
+  };
   enableValidation(validationConfig);
 
   // Обработчик события загрузки контента страницы
@@ -146,6 +155,27 @@ let userId;
     }
   });
 
+  // Лайк
+  const likeCallback = async (cardData, likeButton, likeCount) => {
+    try {
+      const cardId = cardData && cardData._id;
+      if (cardId) {
+        const isLiked = likeButton.classList.contains('card__like-button_is-active');
+        const updatedCardData = await likeCard(cardId, isLiked);
+        if (cardData) {
+          cardData.likes = updatedCardData.likes;
+          likeCount.textContent = cardData.likes.length;
+        }
+
+        updateLikeState(likeButton, !isLiked);
+      } else {
+        console.error('Ошибка: ID карточки не определен.');
+      }
+    } catch (error) {
+      console.error('Ошибка при обработке лайка:', error.message);
+    }
+  };
+
   // Загрузка данных пользователя и карточек при загрузке страницы
   Promise.all([api.fetchUserData(), api.getInitialCards()])
     .then(([userData, cardsData]) => {
@@ -161,7 +191,7 @@ let userId;
 
       // Создание DOM-элементов карточек и добавление их в список
       cardsData.forEach(cardData => {
-        const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, userId);
+        const newCardElement = createCard(cardData, deleteCardHandler, openImagePopup, userId, likeCallback);
         placesList.appendChild(newCardElement);
       });
     })
